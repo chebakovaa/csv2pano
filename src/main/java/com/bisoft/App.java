@@ -1,11 +1,12 @@
 package com.bisoft;
 
 import org.neo4j.driver.*;
-
+import org.apache.commons.lang3.ArrayUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,16 +24,21 @@ public class App
         String folder = "C:\\Users\\Chebakov.AA\\neo4j\\import\\pitc";
         Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "admin" ) );
     
-        String[] models = Arrays
-          .stream((new File(folder)).listFiles()).map(v -> v.toPath().getFileName().toString().replace(".csv", "")).filter(v -> !v.contains("relation"))
+        Supplier<Stream<String>> stream = () -> Arrays
+          .stream((new File(folder)).listFiles())
+          .map(v -> v.toPath().getFileName().toString().replace(".csv", ""));
+        
+        String[] models = stream.get().filter(v -> !v.contains("relation") && !v.contains("dim_"))
           .toArray(String[]::new);
-        String[] relations = Arrays
-          .stream((new File(folder)).listFiles()).map(v -> v.toPath().getFileName().toString().replace(".csv", "")).filter(v -> v.contains("relation"))
+        String[] relations = stream.get().filter(v -> v.contains("relation_"))
+          .toArray(String[]::new);
+        String[] dims = stream.get().filter(v -> v.contains("dim_"))
           .toArray(String[]::new);
 
         emptyNeo(driver);
         loadTableData(driver, models);
         loadRelationData(driver, relations);
+        loadDimData(driver, dims);
         driver.close();
     }
     
@@ -61,8 +67,40 @@ public class App
         }
     }
     
-    public static void loadTableData(Driver driver, String[] entities)
-    {
+    private static void loadDimData(Driver driver, String[] dims) {
+        try ( org.neo4j.driver.Session session = driver.session() )
+        {
+            for(final String entity: dims) {
+                switch (entity) {
+                    case "dim_i18n":
+                        loadI18n(session, entity);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid entity: " + entity);
+                }
+                
+                System.out.println( entity );
+            }
+        }
+    }
+    
+    private static void loadI18n(Session session, String entity) {
+        String greeting = session.writeTransaction( new TransactionWork<String>()
+        {
+            @Override
+            public String execute( Transaction tx )
+            {
+                String s = "";
+                String val = "";
+                s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row WITH row WHERE row.%s IS NOT NULL", entity, "mnem");
+                s += String.format(" MERGE (o:%1$s {%2$s, oname: '%1$s', otype: 'item'}); ", entity, pars);
+                Result result = tx.run(s);
+                return result.toString();
+            }
+        } );
+    }
+    
+    public static void loadTableData(Driver driver, String[] entities) {
         try ( org.neo4j.driver.Session session = driver.session() )
         {
             for(final String entity: entities) {
