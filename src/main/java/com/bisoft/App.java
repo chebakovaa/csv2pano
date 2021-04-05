@@ -28,7 +28,7 @@ public class App
           .stream((new File(folder)).listFiles())
           .map(v -> v.toPath().getFileName().toString().replace(".csv", ""));
         
-        String[] models = stream.get().filter(v -> !v.contains("relation") && !v.contains("dim_"))
+        String[] models = stream.get().filter(v -> v.contains("obj_"))
           .toArray(String[]::new);
         String[] relations = stream.get().filter(v -> v.contains("relation_"))
           .toArray(String[]::new);
