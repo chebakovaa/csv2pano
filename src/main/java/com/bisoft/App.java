@@ -1,11 +1,9 @@
 package com.bisoft;
 
 import org.neo4j.driver.*;
-import org.apache.commons.lang3.ArrayUtils;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
+
+import java.io.*;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,7 +19,7 @@ public class App
     }
     
     private static void loadFromCSV() {
-        String folder = "C:\\Users\\Chebakov.AA\\neo4j\\import\\pitc";
+        String folder = "C:\\Users\\chbkv\\neo4j\\import\\pitc";
         Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "admin" ) );
     
         Supplier<Stream<String>> stream = () -> Arrays
@@ -38,7 +36,7 @@ public class App
         emptyNeo(driver);
         loadTableData(driver, models);
         loadRelationData(driver, relations);
-        loadDimData(driver, dims);
+        loadDimData(driver, folder, dims);
         driver.close();
     }
     
@@ -67,13 +65,25 @@ public class App
         }
     }
     
-    private static void loadDimData(Driver driver, String[] dims) {
+    private static void loadDimData(Driver driver, String folder, String[] dims) {
+        String[] params = new String[0];
         try ( org.neo4j.driver.Session session = driver.session() )
         {
             for(final String entity: dims) {
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(new FileReader(entity));
+                    String header = reader.readLine();
+                    reader.close();
+                    params = header.split(";");
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 switch (entity) {
                     case "dim_i18n":
-                        loadI18n(session, entity);
+                        loadI18n(session, entity, params);
                         break;
                     default:
                         throw new IllegalArgumentException("Invalid entity: " + entity);
@@ -84,7 +94,7 @@ public class App
         }
     }
     
-    private static void loadI18n(Session session, String entity) {
+    private static void loadI18n(Session session, String entity, String[] fields) {
         String greeting = session.writeTransaction( new TransactionWork<String>()
         {
             @Override
@@ -92,8 +102,10 @@ public class App
             {
                 String s = "";
                 String val = "";
-                s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row WITH row WHERE row.%s IS NOT NULL", entity, "mnem");
-                s += String.format(" MERGE (o:%1$s {%2$s, oname: '%1$s', otype: 'item'}); ", entity, pars);
+                s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row WITH row WHERE row.%s IS NOT NULL", entity, fields[0]);
+                for(int i=1;i<fields.length;i++){
+                    s += String.format(" MERGE (o:%1$s {name: row.%2$s})-[]-(i:%2$s {name: row.%2$s})", entity, fields[0], fields[i]);
+                }
                 Result result = tx.run(s);
                 return result.toString();
             }
