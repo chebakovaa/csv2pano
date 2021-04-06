@@ -88,7 +88,7 @@ public class App
                   .collect(Collectors.toList());
                 String s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
                 s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
-                String strValues = values.stream().map(v -> String.format("%1$s: row.v_%1$s", v)).collect(Collectors.joining(","));
+                String strValues = values.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
                 s += String.format(" MERGE (%1$s:%1$s {%2$s}) ", entity, strValues);
                 s += objects.stream().map( v -> String.format("MERGE (%1$s)<-[:HEPPENED_ON]-(%2$s)", v, entity)).collect(Collectors.joining(" "));
                 final String query = s;
