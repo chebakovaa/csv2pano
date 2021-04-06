@@ -90,7 +90,7 @@ public class App
                 s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
                 String strValues = values.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
                 s += String.format(" MERGE (%1$s:%1$s {%2$s}) ", entity, strValues);
-                s += objects.stream().map( v -> String.format("MERGE (%1$s)<-[:HEPPENED_ON]-(%2$s)", v, entity)).collect(Collectors.joining(" "));
+                s += objects.stream().map( v -> String.format("MERGE (%1$s)<-[:HEPPENED_ON:CONTAINED_INTO {uid: '%2$s-' + %1$s.uid, oname: '%2$s', otype: 'folder'}]-(%2$s)", v, entity)).collect(Collectors.joining(" "));
                 final String query = s;
                 session.writeTransaction(tx -> {
                     Result result = tx.run(query);
