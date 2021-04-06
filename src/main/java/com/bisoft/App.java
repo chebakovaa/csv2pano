@@ -3,6 +3,8 @@ package com.bisoft;
 import org.neo4j.driver.*;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -19,7 +21,7 @@ public class App
     }
     
     private static void loadFromCSV() {
-        String folder = "C:\\Users\\chbkv\\neo4j\\import\\pitc";
+        String folder = Paths.get(System.getProperty("user.home"), "neo4j\\import\\pitc").toString(); //"C:\\Users\\Chebakov.AA\\neo4j\\import\\pitc";
         Driver driver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "admin" ) );
     
         Supplier<Stream<String>> stream = () -> Arrays
