@@ -89,7 +89,7 @@ public class App
                 String s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
                 s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
                 String strValues = values.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
-                s += String.format(" MERGE (%1$s:%1$s {%2$s}) ", entity, strValues);
+                s += String.format(" MERGE (%1$s:%1$s {%2$s, otype: 'item'}) ", entity, strValues);
                 s += objects.stream().map( v -> String.format("MERGE (%1$s)<-[:HEPPENED_ON:CONTAINED_INTO {uid: '%2$s-' + %1$s.uid, oname: '%2$s', otype: 'folder'}]-(%2$s)", v, entity)).collect(Collectors.joining(" "));
                 final String query = s;
                 session.writeTransaction(tx -> {
@@ -146,7 +146,7 @@ public class App
                 String entity = file.replace("obj_", "");
                 System.out.print( entity );
                 String s = "";
-                s = String.format("USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row WHERE row.%s IS NOT NULL", file, fields[0]);
+                s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row WHERE row.%s IS NOT NULL", file, fields[0]);
                 String pars = Arrays.stream(fields).map(v -> String.format("%1$s: row.%1$s", v)).collect(Collectors.joining(","));
                 s += String.format(" MERGE (o:%1$s {%2$s, oname: '%1$s', otype: 'item'}); ", entity, pars);
                 session.run(s);
@@ -168,7 +168,7 @@ public class App
                 String fromE = entity.split("_")[1];
                 String toE = entity.split("_")[2];
                 String fn = entity;
-                String s = String.format("USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row ", fn);
+                String s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row ", fn);
                 s += String.format(" MATCH (e:%1$s {%3$s: row.from_id}), (o:%2$s {%3$s: row.to_id}) " +
                     "CREATE (e)-[r:CONTAINED_INTO {uid: '%1$s-' + o.uid, oname: '%1$s', otype: 'folder'}]->(o)"
                   , fromE, toE, fields[0]);
