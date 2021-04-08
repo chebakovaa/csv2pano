@@ -101,7 +101,44 @@ public class App
             }
         }
     }
+    
+    private static void loadTimeEventData(Driver driver, String folder, String[] events) {
+        try ( org.neo4j.driver.Session session = driver.session() )
+        {
+            for(final String entity: events) { // пробегаемся по файлам
+                System.out.print( entity );
+                
+                String[] headers = getHeader(folder, entity);
+                List<String> objects = Arrays.stream(headers)
+                  .filter(v -> v.contains("id_"))
+                  .map(v -> v.split("_")[1])
+                  .collect(Collectors.toList());
+                List<String> params = Arrays.stream(headers)
+                  .filter(v -> v.contains("v_"))
+                  .map(v -> v.split("_")[1])
+                  .collect(Collectors.toList());
+                List<String> values = Arrays.stream(headers)
+                  .filter(v -> v.contains("ve_"))
+                  .map(v -> v.split("_")[1])
+                  .collect(Collectors.toList());
+                
+                String s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
+                s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
 
+                String strValues = params.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
+                s += String.format(" MERGE (%1$s:%1$s {%2$s, otype: 'item'}) ", entity, strValues);
+                s += objects.stream().map( v -> String.format("MERGE (%1$s)<-[:HEPPENED_ON:CONTAINED_INTO {uid: '%2$s-' + %1$s.uid, oname: '%2$s', otype: 'folder'}]-(%2$s)", v, entity)).collect(Collectors.joining(" "));
+                final String query = s;
+                session.writeTransaction(tx -> {
+                    Result result = tx.run(query);
+                    return result.toString();
+                });
+                
+                System.out.println( " pass" );
+            }
+        }
+    }
+    
     private static void loadDimData(Driver driver, String folder, String[] dims) {
         try ( org.neo4j.driver.Session session = driver.session() )
         {
