@@ -33,7 +33,7 @@ public class App
           .toArray(String[]::new);
         String[] relations = stream.get().filter(v -> v.contains("relation_"))
           .toArray(String[]::new);
-        String[] events = stream.get().filter(v -> v.contains("event_"))
+        String[] events = stream.get().filter(v -> v.contains("timeevent_"))
           .toArray(String[]::new);
         String[] dims = stream.get().filter(v -> v.contains("dim_"))
           .toArray(String[]::new);
@@ -41,7 +41,7 @@ public class App
         emptyNeo(driver);
         loadTableData(driver, models);
         loadRelationData(driver, relations);
-        loadEventData(driver, folder, events);
+        loadTimeEventData(driver, folder, events);
         loadDimData(driver, folder, dims);
         driver.close();
     }
@@ -109,30 +109,48 @@ public class App
                 System.out.print( entity );
                 
                 String[] headers = getHeader(folder, entity);
+                
                 List<String> objects = Arrays.stream(headers)
                   .filter(v -> v.contains("id_"))
+                  .map(v -> v.split("_")[1])
+                  .collect(Collectors.toList());
+                List<String> times = Arrays.stream(headers)
+                  .filter(v -> v.contains("tm_"))
                   .map(v -> v.split("_")[1])
                   .collect(Collectors.toList());
                 List<String> params = Arrays.stream(headers)
                   .filter(v -> v.contains("v_"))
                   .map(v -> v.split("_")[1])
                   .collect(Collectors.toList());
-                List<String> values = Arrays.stream(headers)
-                  .filter(v -> v.contains("ve_"))
-                  .map(v -> v.split("_")[1])
-                  .collect(Collectors.toList());
+//                List<String> values = Arrays.stream(headers)
+//                  .filter(v -> v.contains("ve_"))
+//                  .map(v -> v.split("_")[1])
+//                  .collect(Collectors.toList());
                 
                 String s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
                 s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
+                s += ", " + times.stream().map(v -> String.format("(%1$s:%1$s {uid: row.tm_%1$s}) ", v)).collect(Collectors.joining(", "));
 
                 String strValues = params.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
                 s += String.format(" MERGE (%1$s:%1$s {%2$s, otype: 'item'}) ", entity, strValues);
-                s += objects.stream().map( v -> String.format("MERGE (%1$s)<-[:HEPPENED_ON:CONTAINED_INTO {uid: '%2$s-' + %1$s.uid, oname: '%2$s', otype: 'folder'}]-(%2$s)", v, entity)).collect(Collectors.joining(" "));
+    
+                String strObject = objects
+                  .stream()
+                  .map( v -> String.format("%1$s: %1$s.uid", v)).collect(Collectors.joining(","));
+                
+                s += objects
+                  .stream()
+                  .map( v -> String.format(" MERGE (%1$s)<-[:HEPPENED_ON {%3$s, otype: 'folder'}]-(year) "
+                    , v, entity, strObject))
+                  .collect(Collectors.joining(" "));
+                s += String.format("MERGE (year)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(month) " +
+                  "MERGE (month)<-[:HEPPE  NED_ON {%2$s, otype: 'folder'}]-(%1$s) ", entity, strObject);
                 final String query = s;
-                session.writeTransaction(tx -> {
-                    Result result = tx.run(query);
-                    return result.toString();
-                });
+                session.run(s);
+//                session.writeTransaction(tx -> {
+//                    Result result = tx.run(query);
+//                    return result.toString();
+//                });
                 
                 System.out.println( " pass" );
             }
