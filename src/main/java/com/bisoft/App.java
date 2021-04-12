@@ -143,8 +143,9 @@ public class App
                   .map( v -> String.format(" MERGE (%1$s)<-[:HEPPENED_ON {%3$s, otype: 'folder'}]-(year) "
                     , v, entity, strObject))
                   .collect(Collectors.joining(" "));
-                s += String.format("MERGE (year)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(month) " +
-                  "MERGE (month)<-[:HEPPE  NED_ON {%2$s, otype: 'folder'}]-(%1$s) ", entity, strObject);
+                //s += String.format("MERGE (year)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(month) ", entity, strObject);
+//                s += String.format("MERGE (year)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(month) " +
+//                  "MERGE (month)<-[:HEPPE  NED_ON {%2$s, otype: 'folder'}]-(%1$s) ", entity, strObject);
                 final String query = s;
                 session.run(s);
 //                session.writeTransaction(tx -> {
