@@ -127,12 +127,12 @@ public class App
 //                  .map(v -> v.split("_")[1])
 //                  .collect(Collectors.toList());
                 
-                String s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
+                String s = String.format("USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
                 s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
                 s += ", " + times.stream().map(v -> String.format("(%1$s:%1$s {uid: row.tm_%1$s}) ", v)).collect(Collectors.joining(", "));
 
-                String strValues = params.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
-                s += String.format(" MERGE (%1$s:%1$s {%2$s, otype: 'item'}) ", entity, strValues);
+                // String strValues = params.stream().map(v -> String.format("%1$s: coalesce(row.v_%1$s, 'н/д')", v)).collect(Collectors.joining(","));
+                // s += String.format(" MERGE (%1$s:%1$s {%2$s, otype: 'item'}) ", entity, strValues);
     
                 String strObject = objects
                   .stream()
