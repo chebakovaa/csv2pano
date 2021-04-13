@@ -127,7 +127,7 @@ public class App
 //                  .map(v -> v.split("_")[1])
 //                  .collect(Collectors.toList());
                 
-                String s = String.format("USING PERIODIC COMMIT 1000 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
+                String s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row MATCH ", entity);
                 s += objects.stream().map(v -> String.format("(%1$s:%1$s {uid: row.id_%1$s}) ", v)).collect(Collectors.joining(", "));
                 s += ", " + times.stream().map(v -> String.format("(%1$s:%1$s {uid: row.tm_%1$s}) ", v)).collect(Collectors.joining(", "));
 
@@ -145,13 +145,13 @@ public class App
                   .collect(Collectors.joining(" "));
                 //s += String.format("MERGE (year)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(month) ", entity, strObject);
 //                s += String.format("MERGE (year)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(month) " +
-//                  "MERGE (month)<-[:HEPPE  NED_ON {%2$s, otype: 'folder'}]-(%1$s) ", entity, strObject);
+//                  "MERGE (month)<-[:HEPPENED_ON {%2$s, otype: 'folder'}]-(%1$s) ", entity, strObject);
                 final String query = s;
-                session.run(s);
-//                session.writeTransaction(tx -> {
-//                    Result result = tx.run(query);
-//                    return result.toString();
-//                });
+                //session.run(s);
+                session.writeTransaction(tx -> {
+                    Result result = tx.run(query);
+                    return result.toString();
+                });
                 
                 System.out.println( " pass" );
             }
@@ -202,15 +202,16 @@ public class App
                 String entity = file.replace("obj_", "");
                 System.out.print( entity );
                 String s = "";
-                s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row WHERE row.%s IS NOT NULL", file, fields[0]);
+                s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row WHERE row.%s IS NOT NULL", file, fields[0]);
                 String pars = Arrays.stream(fields).map(v -> String.format("%1$s: row.%1$s", v)).collect(Collectors.joining(","));
                 s += String.format(" MERGE (o:%1$s {%2$s, oname: '%1$s', otype: 'item'}); ", entity, pars);
-                session.run(s);
-                
-//                String greeting = session.writeTransaction(tx -> {
-//                    Result result = tx.run(s);
-//                    return result.toString();
-//                });
+                //session.run(s);
+    
+                final String query = s;
+                String greeting = session.writeTransaction(tx -> {
+                    Result result = tx.run(query);
+                    return result.toString();
+                });
                 System.out.println( " pass" );
             }
         }
@@ -224,22 +225,17 @@ public class App
                 String fromE = entity.split("_")[1];
                 String toE = entity.split("_")[2];
                 String fn = entity;
-                String s = String.format("USING PERIODIC COMMIT 500 LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row ", fn);
+                String s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row ", fn);
                 s += String.format(" MATCH (e:%1$s {%3$s: row.from_id}), (o:%2$s {%3$s: row.to_id}) " +
                     "CREATE (e)-[r:CONTAINED_INTO {uid: '%1$s-' + o.uid, oname: '%1$s', otype: 'folder'}]->(o)"
                   , fromE, toE, fields[0]);
-                session.run(s);
+    
+                final String query = s;
+                String greeting = session.writeTransaction(tx -> {
+                    Result result = tx.run(query);
+                    return result.toString();
+                });
 
-
-//                String greeting = session.writeTransaction( new TransactionWork<String>()
-//                {
-//                    @Override
-//                    public String execute( Transaction tx )
-//                    {
-//                        Result result = tx.run(s);
-//                        return result.toString();
-//                    }
-//                } );
                 System.out.println( " pass" );
             }
         }
