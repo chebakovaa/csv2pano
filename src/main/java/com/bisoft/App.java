@@ -39,10 +39,10 @@ public class App
           .toArray(String[]::new);
 
         emptyNeo(driver);
-        loadTableData(driver, models);
-        loadRelationData(driver, relations);
-//        loadTimeEventData(driver, folder, events);
-        loadDimData(driver, folder, dims);
+        //loadTableData(driver, models);
+        //loadRelationData(driver, relations);
+        loadEventData(driver, folder, events);
+        //loadDimData(driver, folder, dims);
         driver.close();
     }
     
@@ -72,7 +72,7 @@ public class App
         }
     }
     
-    private static void loadEventData(Driver driver, String folder, String[] events) {
+    private static void loadEventData2(Driver driver, String folder, String[] events) {
         try ( org.neo4j.driver.Session session = driver.session() )
         {
             for(final String entity: events) {
@@ -97,6 +97,55 @@ public class App
                     return result.toString();
                 });
 
+                System.out.println( " pass" );
+            }
+        }
+    }
+
+    private static void loadEventData(Driver driver, String folder, String[] events) {
+        try ( org.neo4j.driver.Session session = driver.session() )
+        {
+            for(final String entity: events) {
+                System.out.print( entity );
+                String[] params = getHeader(folder, entity);
+
+                List<String> values = Arrays.stream(params)
+                  .filter(v -> v.contains("v_"))
+                  .map(v -> v.split("_")[1])
+                  .collect(Collectors.toList());
+    
+                String label = entity.split("_")[1];
+                String s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row ", entity);
+                s += String.format(" MERGE (o:%1$s {uid: row.uid, oname: '%1$s', otype: 'item'}) return count(o)", label);
+                final String query = s;
+                s = String.format("call apoc.periodic.commit('%s',{limit:10000})", s);
+                String s1 = "CALL apoc.load.csv(\"file:///pitc/timeevent_mer.csv\", {sep:\";\", arraySep:\",\", header:true}) YIELD map as row return row";
+                s = String.format(" MERGE (o:%1$s {uid: row.uid, oname: \"%1$s\", otype: \"item\"}) return count(o)", label);
+                s = String.format("CALL apoc.periodic.iterate('%s','%s',{batchSize:10000, iterateList:true});", s1, s);
+                
+                
+                
+//                session.writeTransaction(tx -> {
+//                    Result result = tx.run(
+//                      String.format("DROP INDEX %1$s_pk_uid_unique IF EXISTS", label)
+//                    );
+//                    return result.toString();
+//                });
+    
+                session.run(s);
+    
+//                session.writeTransaction(tx -> {
+//                    Result result = tx.run(query);
+//                    return result.toString();
+//                });
+    
+                session.writeTransaction(tx -> {
+                    Result result = tx.run(
+                      String.format("create constraint %1$s_pk_uid_unique IF NOT EXISTS on (n:%1$s) assert n.uid is unique", label)
+                    );
+                    return result.toString();
+                });
+    
                 System.out.println( " pass" );
             }
         }
@@ -208,12 +257,12 @@ public class App
                 final String query = s;
     
                 
-                session.writeTransaction(tx -> {
-                    Result result = tx.run(
-                      String.format("DROP INDEX %1$s_pk_uid_unique IF EXISTS", entity)
-                    );
-                    return result.toString();
-                });
+//                session.writeTransaction(tx -> {
+//                    Result result = tx.run(
+//                      String.format("DROP INDEX %1$s_pk_uid_unique IF EXISTS", entity)
+//                    );
+//                    return result.toString();
+//                });
                 
                 String greeting = session.writeTransaction(tx -> {
                     Result result = tx.run(query);
