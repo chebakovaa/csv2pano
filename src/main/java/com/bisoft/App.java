@@ -39,9 +39,9 @@ public class App
           .toArray(String[]::new);
 
         emptyNeo(driver);
-        //loadTableData(driver, models);
+        loadTableData(driver, models);
         //loadRelationData(driver, relations);
-        loadEventData(driver, folder, events);
+        //loadEventData(driver, folder, events);
         //loadDimData(driver, folder, dims);
         driver.close();
     }
@@ -254,6 +254,7 @@ public class App
                 s = String.format("LOAD CSV WITH HEADERS FROM 'file:///pitc/%s.csv' AS row FIELDTERMINATOR ';' WITH row WHERE row.%s IS NOT NULL", file, fields[0]);
                 String pars = Arrays.stream(fields).map(v -> String.format("%1$s: row.%1$s", v)).collect(Collectors.joining(","));
                 s += String.format(" MERGE (o:%1$s {%2$s, oname: '%1$s', otype: 'item'}) return count(o); ", entity, pars);
+                s = String.format("CALL apoc.import.csv([{fileName: 'file:///pitc/obj_%1$s.csv', labels:['%1$s']}], [], {delimiter: ';', arrayDelimiter: '|', stringIds: true})", entity);
                 final String query = s;
     
                 
@@ -269,12 +270,12 @@ public class App
                     return result.toString();
                 });
 
-                session.writeTransaction(tx -> {
-                    Result result = tx.run(
-                      String.format("create constraint %1$s_pk_uid_unique IF NOT EXISTS on (n:%1$s) assert n.uid is unique", entity)
-                    );
-                    return result.toString();
-                });
+//                session.writeTransaction(tx -> {
+//                    Result result = tx.run(
+//                      String.format("create constraint %1$s_pk_uid_unique IF NOT EXISTS on (n:%1$s) assert n.uid is unique", entity)
+//                    );
+//                    return result.toString();
+//                });
 
                 System.out.println( " pass" );
             }
