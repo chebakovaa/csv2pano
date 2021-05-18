@@ -39,9 +39,9 @@ public class App
           .toArray(String[]::new);
 
         emptyNeo(driver);
-        loadTableData(driver, models);
+        //loadTableData(driver, models);
         //loadRelationData(driver, relations);
-        //loadEventData(driver, folder, events);
+        loadEventData(driver, folder, events);
         //loadDimData(driver, folder, dims);
         driver.close();
     }
@@ -123,28 +123,23 @@ public class App
                 s = String.format(" MERGE (o:%1$s {uid: row.uid, oname: \"%1$s\", otype: \"item\"}) return count(o)", label);
                 s = String.format("CALL apoc.periodic.iterate('%s','%s',{batchSize:10000, iterateList:true});", s1, s);
                 
-                
-                
 //                session.writeTransaction(tx -> {
 //                    Result result = tx.run(
 //                      String.format("DROP INDEX %1$s_pk_uid_unique IF EXISTS", label)
 //                    );
 //                    return result.toString();
 //                });
-    
                 session.run(s);
-    
 //                session.writeTransaction(tx -> {
 //                    Result result = tx.run(query);
 //                    return result.toString();
 //                });
-    
-                session.writeTransaction(tx -> {
-                    Result result = tx.run(
-                      String.format("create constraint %1$s_pk_uid_unique IF NOT EXISTS on (n:%1$s) assert n.uid is unique", label)
-                    );
-                    return result.toString();
-                });
+//                session.writeTransaction(tx -> {
+//                    Result result = tx.run(
+//                      String.format("create constraint %1$s_pk_uid_unique IF NOT EXISTS on (n:%1$s) assert n.uid is unique", label)
+//                    );
+//                    return result.toString();
+//                });
     
                 System.out.println( " pass" );
             }
