@@ -1,5 +1,10 @@
 package com.bisoft;
 
+import com.bisoft.exeptions.LoadConnectionParameterException;
+import com.bisoft.interfaces.IDBConnection;
+import com.bisoft.model.DBConnection;
+import com.bisoft.models.CSVFormat;
+import com.bisoft.resources.MapResource;
 import org.neo4j.driver.*;
 
 import java.io.*;
@@ -7,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,8 +23,29 @@ public class App
 
     public static void main( String[] args )
     {
-        System.out.println( "Start load!" );
-        loadFromCSV();
+        try {
+            Map<String, String> sourceResource = new MapResource("source.properties").loadedResource();
+            File folder = args.length > 0 && args[0] != null && args[0].length() > 0 ? new File(args[0])
+                    : new File(Paths.get(System.getProperty("user.home"), sourceResource.get("location")).toUri());
+
+            IDBConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource());
+
+            source = FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"));
+
+            new ObjectStructure(
+                    new DBSource(
+                            appConnection.opennedConnection(),
+                            new StringResource("get_all_tables.sql").loadedResource(),
+                            new StringResource("get_table_content.sql").loadedResource()
+                    ),
+                    new FileTarget(
+                            new FolderContent(folder).clearedFolder(),
+                            new CSVFormat(target.get("column.delimiter"))
+                    )
+            ).save();
+        } catch (ClearFolderContentException | IOException | DBConnectionException | LoadConnectionParameterException | GetObjectNamesException | LoadConnectionParameterException e) {
+            e.printStackTrace();
+        }
     }
     
     private static void loadFromCSV() {
