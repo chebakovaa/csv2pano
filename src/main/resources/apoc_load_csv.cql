@@ -1,0 +1,1 @@
+CALL apoc.load.csv("file:///pitc/timeevent_mer.csv", {sep:";", arraySep:",", header:true}) YIELD map as row return row
