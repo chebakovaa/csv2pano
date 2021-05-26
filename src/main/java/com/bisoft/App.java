@@ -1,21 +1,17 @@
 package com.bisoft;
 
-import com.bisoft.exeptions.LoadConnectionParameterException;
-import com.bisoft.interfaces.IClearedTarget;
-import com.bisoft.interfaces.IDBConnection;
+import com.bisoft.exeptions.DBConnectionException;
 import com.bisoft.interfaces.IFileSource;
 import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.model.DBConnection;
 import com.bisoft.model.DBTarget;
 import com.bisoft.model.FileSource;
-import com.bisoft.models.CSVFormat;
+import com.bisoft.model.ObjectStructure;
 import com.bisoft.navi.common.exceptions.LoadConnectionParameterException;
+import com.bisoft.navi.common.model.CSVFormat;
 import com.bisoft.navi.common.resources.MapResource;
-import com.bisoft.resources.MapResource;
 import org.neo4j.driver.*;
-
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -37,24 +33,14 @@ public class App
 
             IOpenedConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource()).openedConnection();
     
-            IFileSource source = new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"));
+            IFileSource source = new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter")));
 
-            IClearedTarget target = new DBTarget(dbConnection).clearedTarget();
             
-            
-            
-//            new ObjectStructure(
-//                    new DBSource(
-//                            appConnection.opennedConnection(),
-//                            new StringResource("get_all_tables.sql").loadedResource(),
-//                            new StringResource("get_table_content.sql").loadedResource()
-//                    ),
-//                    new FileTarget(
-//                            new FolderContent(folder).clearedFolder(),
-//                            new CSVFormat(target.get("column.delimiter"))
-//                    )
-//            ).save();
-        } catch (IOException | DBConnectionException | GetObjectNamesException | LoadConnectionParameterException e) {
+            new ObjectStructure(
+                    source,
+              new DBTarget(dbConnection).clearedTarget()
+            ).save();
+        } catch (IOException | LoadConnectionParameterException | DBConnectionException e) {
             e.printStackTrace();
         }
     }
