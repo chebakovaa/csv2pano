@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<query-collection>
+    <query id="clear-ship">
+        MATCH()-[n]-() delete n;
+    </query>
+    <query id="clear-obj">
+        MATCH(n) DELETE n;
+    </query>
+</query-collection>

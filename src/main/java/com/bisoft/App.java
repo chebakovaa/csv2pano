@@ -1,9 +1,16 @@
 package com.bisoft;
 
 import com.bisoft.exeptions.LoadConnectionParameterException;
+import com.bisoft.interfaces.IClearedTarget;
 import com.bisoft.interfaces.IDBConnection;
+import com.bisoft.interfaces.IFileSource;
+import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.model.DBConnection;
+import com.bisoft.model.DBTarget;
+import com.bisoft.model.FileSource;
 import com.bisoft.models.CSVFormat;
+import com.bisoft.navi.common.exceptions.LoadConnectionParameterException;
+import com.bisoft.navi.common.resources.MapResource;
 import com.bisoft.resources.MapResource;
 import org.neo4j.driver.*;
 
@@ -28,22 +35,26 @@ public class App
             File folder = args.length > 0 && args[0] != null && args[0].length() > 0 ? new File(args[0])
                     : new File(Paths.get(System.getProperty("user.home"), sourceResource.get("location")).toUri());
 
-            IDBConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource());
+            IOpenedConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource()).openedConnection();
+    
+            IFileSource source = new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"));
 
-            source = FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"));
-
-            new ObjectStructure(
-                    new DBSource(
-                            appConnection.opennedConnection(),
-                            new StringResource("get_all_tables.sql").loadedResource(),
-                            new StringResource("get_table_content.sql").loadedResource()
-                    ),
-                    new FileTarget(
-                            new FolderContent(folder).clearedFolder(),
-                            new CSVFormat(target.get("column.delimiter"))
-                    )
-            ).save();
-        } catch (ClearFolderContentException | IOException | DBConnectionException | LoadConnectionParameterException | GetObjectNamesException | LoadConnectionParameterException e) {
+            IClearedTarget target = new DBTarget(dbConnection).clearedTarget();
+            
+            
+            
+//            new ObjectStructure(
+//                    new DBSource(
+//                            appConnection.opennedConnection(),
+//                            new StringResource("get_all_tables.sql").loadedResource(),
+//                            new StringResource("get_table_content.sql").loadedResource()
+//                    ),
+//                    new FileTarget(
+//                            new FolderContent(folder).clearedFolder(),
+//                            new CSVFormat(target.get("column.delimiter"))
+//                    )
+//            ).save();
+        } catch (IOException | DBConnectionException | GetObjectNamesException | LoadConnectionParameterException e) {
             e.printStackTrace();
         }
     }
