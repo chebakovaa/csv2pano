@@ -5,12 +5,16 @@ import com.bisoft.interfaces.IFileSource;
 import com.bisoft.interfaces.IObjectStructure;
 
 public class ObjectStructure implements IObjectStructure {
-	public ObjectStructure(IFileSource source, IClearedTarget target) {
+	private final IStructureSource source;
+	private final IClearedTarget target;
 	
+	public ObjectStructure(IFileSource source, IClearedTarget target) {
+		this.source = source;
+		this.target = target;
 	}
 	
 	@Override
 	public void save() {
-	
+		source.
 	}
 }

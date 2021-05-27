@@ -33,14 +33,11 @@ public class App
 
             IOpenedConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource()).openedConnection();
     
-            IFileSource source = new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter")));
-
-            
             new ObjectStructure(
-                    source,
+              new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"))),
               new DBTarget(dbConnection).clearedTarget()
             ).save();
-        } catch (IOException | LoadConnectionParameterException | DBConnectionException e) {
+        } catch (LoadConnectionParameterException | DBConnectionException e) {
             e.printStackTrace();
         }
     }
