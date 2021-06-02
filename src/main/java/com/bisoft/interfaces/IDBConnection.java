@@ -1,7 +1,6 @@
 package com.bisoft.interfaces;
 
-import com.bisoft.exeptions.DBConnectionException;
-import org.neo4j.driver.Session;
+import com.bisoft.navi.common.exceptions.DBConnectionException;
 
 public interface IDBConnection {
     IOpenedConnection openedConnection() throws DBConnectionException;

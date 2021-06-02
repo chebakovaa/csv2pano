@@ -1,11 +1,10 @@
 package com.bisoft.model;
 
-import com.bisoft.exeptions.GetObjectNamesException;
-import com.bisoft.interfaces.IModelObject;
-import com.bisoft.interfaces.IStructureSource;
-import com.bisoft.models.ModelObjectDBCollection;
+import com.bisoft.navi.common.exceptions.GetObjectNamesException;
+import com.bisoft.navi.common.exceptions.LoadStructureSourceException;
+import com.bisoft.navi.common.interfaces.IModelObject;
 import com.bisoft.navi.common.interfaces.ISavedFormat;
-import com.bisoft.navi.common.model.CSVFormat;
+import com.bisoft.navi.common.interfaces.IStructureSource;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,9 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Objects;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public class FileSource implements IStructureSource {
 	
@@ -58,4 +54,8 @@ public class FileSource implements IStructureSource {
 		}
 	}
 	
+	@Override
+	public Iterator<IModelObject> objectCollection(ElementType et) throws LoadStructureSourceException {
+		return null;
+	}
 }

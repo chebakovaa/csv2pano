@@ -1,15 +1,15 @@
 package com.bisoft;
 
-import com.bisoft.exeptions.DBConnectionException;
-import com.bisoft.interfaces.IFileSource;
 import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.model.DBConnection;
 import com.bisoft.model.DBTarget;
 import com.bisoft.model.FileSource;
 import com.bisoft.model.ObjectStructure;
 import com.bisoft.navi.common.exceptions.LoadConnectionParameterException;
+import com.bisoft.navi.common.exceptions.TargetConnectionException;
 import com.bisoft.navi.common.model.CSVFormat;
 import com.bisoft.navi.common.resources.MapResource;
+import com.bisoft.navi.common.resources.XMLResource;
 import org.neo4j.driver.*;
 import java.io.*;
 import java.nio.file.Paths;
@@ -35,9 +35,14 @@ public class App
     
             new ObjectStructure(
               new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"))),
-              new DBTarget(dbConnection).clearedTarget()
+              new DBTarget(
+                dbConnection
+                , new XMLResource(
+                    com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")
+                ).loadedResource()
+              ).clearedTarget()
             ).save();
-        } catch (LoadConnectionParameterException | DBConnectionException e) {
+        } catch (LoadConnectionParameterException | TargetConnectionException e) {
             e.printStackTrace();
         }
     }

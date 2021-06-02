@@ -1,4 +1,4 @@
-package com.bisoft.model;
+package com.bisoft.interfaces;
 
 import com.bisoft.interfaces.IClearedTarget;
 
