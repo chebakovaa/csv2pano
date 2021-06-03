@@ -9,8 +9,6 @@ import com.bisoft.navi.common.interfaces.IStructureSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Path;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -30,32 +28,14 @@ public class FileSource implements IStructureSource {
 	}
 	
 	@Override
-	public Iterator<IModelObject> objectCollection(ElementType et) {
-		
+	public Iterator<IModelObject> objectCollection(final String prefix) throws LoadStructureSourceException {
 		Arrays
 			.stream(folder.listFiles())
+			.filter(v -> v.isFile() && v.toString().contains(prefix))
 			.map(v ->
 				new FileModelObject(
 					removeExtension(v.toPath().getFileName())
-				, new FileInputStream(v).)
+					, new FileInputStream(v).)
 			);
-		
-		
-		
-		
-		try {
-
-
-			ResultSet tables = openedConnection.Query(collectionQuery);
-			return new ModelObjectDBCollection(openedConnection, tables, objectQuery);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new GetObjectNamesException("Get Object Names Fail");
-		}
-	}
-	
-	@Override
-	public Iterator<IModelObject> objectCollection(ElementType et) throws LoadStructureSourceException {
-		return null;
 	}
 }

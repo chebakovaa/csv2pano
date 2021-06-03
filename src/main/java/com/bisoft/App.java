@@ -1,10 +1,9 @@
 package com.bisoft;
 
+import com.bisoft.interfaces.INeoQuery;
 import com.bisoft.interfaces.IOpenedConnection;
-import com.bisoft.model.DBConnection;
-import com.bisoft.model.DBTarget;
-import com.bisoft.model.FileSource;
-import com.bisoft.model.ObjectStructure;
+import com.bisoft.model.*;
+import com.bisoft.navi.common.exceptions.DBConnectionException;
 import com.bisoft.navi.common.exceptions.LoadConnectionParameterException;
 import com.bisoft.navi.common.exceptions.TargetConnectionException;
 import com.bisoft.navi.common.model.CSVFormat;
@@ -32,17 +31,23 @@ public class App
                     : new File(Paths.get(System.getProperty("user.home"), sourceResource.get("location")).toUri());
 
             IOpenedConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource()).openedConnection();
+            Map<String, String> cql = new XMLResource(com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")).loadedResource();
+            
+            Map<String, INeoQuery> map = Map.of(
+              "obj_", new NeoQueryObject(cql),
+              "relation_", new NeoQueryShip(cql),
+              "fact_", new NeoQueryFact(cql),
+              "dic_", new NeoQueryDic(cql)
+            );
     
             new ObjectStructure(
               new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"))),
               new DBTarget(
                 dbConnection
-                , new XMLResource(
-                    com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")
-                ).loadedResource()
+                , cql
               ).clearedTarget()
             ).save();
-        } catch (LoadConnectionParameterException | TargetConnectionException e) {
+        } catch (LoadConnectionParameterException | DBConnectionException e) {
             e.printStackTrace();
         }
     }

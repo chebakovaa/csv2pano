@@ -1,6 +1,7 @@
 package com.bisoft.model;
 
 import com.bisoft.interfaces.IClearedTarget;
+import com.bisoft.interfaces.INeoQuery;
 import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.navi.common.interfaces.IModelObject;
 import org.neo4j.driver.Driver;
@@ -21,12 +22,11 @@ public class ClearedTarget implements IClearedTarget {
 	}
 	
 	@Override
-	public void saveObject(IModelObject obj) {
+	public void save(IModelObject obj, INeoQuery nquery) {
 		System.out.print( obj.name() );
 		try ( Session session = dbConnection.session() )
 		{
-			session.run(String.format(resource.get("import_obj"), obj.name()));
+			nquery.execute(obj, session);
 		}
 	}
-	
 }
