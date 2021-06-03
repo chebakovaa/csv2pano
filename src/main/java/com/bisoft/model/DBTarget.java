@@ -3,6 +3,7 @@ package com.bisoft.model;
 import com.bisoft.interfaces.IClearedTarget;
 import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.interfaces.ITarget;
+import org.neo4j.driver.Session;
 
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class DBTarget implements ITarget {
 	
 	@Override
 	public IClearedTarget clearedTarget() {
-		try ( org.neo4j.driver.Session session = dbConnection.session() )
+		try ( Session session = dbConnection.session() )
 		{
 			session.run(resource.get("clear_all_ships"));
 			session.run(resource.get("clear_all_objs"));

@@ -6,4 +6,7 @@
     <query id="clear-all-objs">
         MATCH(n) DELETE n;
     </query>
+    <query id="import-obj">
+        CALL apoc.import.csv([{fileName: 'file:///pitc/obj_%s', labels:[]}], [], {delimiter: ';', arrayDelimiter: '|', stringIds: true})
+    </query>
 </query-collection>

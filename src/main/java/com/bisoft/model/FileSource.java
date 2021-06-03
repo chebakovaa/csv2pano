@@ -30,7 +30,7 @@ public class FileSource implements IStructureSource {
 	}
 	
 	@Override
-	public Iterator<IModelObject> objectCollection() throws GetObjectNamesException {
+	public Iterator<IModelObject> objectCollection(ElementType et) {
 		
 		Arrays
 			.stream(folder.listFiles())
