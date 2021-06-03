@@ -34,7 +34,7 @@ public class App
             Map<String, String> cql = new XMLResource(com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")).loadedResource();
             
             Map<String, INeoQuery> map = Map.of(
-              "obj_", new NeoQueryObject(cql),
+              "obj_", new NeoQuery<StructureNode>(fun, cql),
               "relation_", new NeoQueryShip(cql),
               "fact_", new NeoQueryFact(cql),
               "dic_", new NeoQueryDic(cql)
