@@ -4,13 +4,15 @@ import com.bisoft.navi.common.exceptions.GetTitleObjectException;
 import com.bisoft.navi.common.interfaces.IModelObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class FileModelObject implements IModelObject {
 	
 	private final String name;
-	private final List<String> title;
+	private final Iterable<String> title;
 	
-	public FileModelObject(String name, List<String> title) {
+	public FileModelObject(String name, Iterable<String> title) {
 		this.name = name;
 		this.title = title;
 	}
@@ -22,7 +24,9 @@ public class FileModelObject implements IModelObject {
 	
 	@Override
 	public List<String> title() throws GetTitleObjectException {
-		return title;
+		return StreamSupport
+				.stream(title.spliterator(), false)
+				.collect(Collectors.toList());
 	}
 	
 	@Override
