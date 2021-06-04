@@ -1,7 +1,16 @@
 package com.bisoft.model;
 
-public class StructureNode {
-    public static void execute() {
+import com.bisoft.interfaces.ILoadedQuery;
+import com.bisoft.navi.common.interfaces.IModelObject;
+import org.neo4j.driver.Session;
 
+import java.util.Map;
+
+public class StructureNode implements ILoadedQuery {
+   
+    @Override
+    public void run(Session session, IModelObject obj, Map<String, String> cql) {
+        session.run(String.format(cql.get("import_node"), obj.name()));
     }
+    
 }

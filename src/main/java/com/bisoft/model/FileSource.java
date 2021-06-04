@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 
 public class FileSource implements IStructureSource {
@@ -29,13 +30,13 @@ public class FileSource implements IStructureSource {
 	
 	@Override
 	public Iterator<IModelObject> objectCollection(final String prefix) throws LoadStructureSourceException {
-		Arrays
+		return Arrays
 			.stream(folder.listFiles())
 			.filter(v -> v.isFile() && v.toString().contains(prefix))
 			.map(v ->
-				new FileModelObject(
+				(IModelObject) new FileModelObject(
 					removeExtension(v.toPath().getFileName())
-					, new FileInputStream(v).)
-			);
+					, Collections.EMPTY_LIST)
+			).toList().iterator();
 	}
 }

@@ -5,7 +5,6 @@ import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.model.*;
 import com.bisoft.navi.common.exceptions.DBConnectionException;
 import com.bisoft.navi.common.exceptions.LoadConnectionParameterException;
-import com.bisoft.navi.common.exceptions.TargetConnectionException;
 import com.bisoft.navi.common.model.CSVFormat;
 import com.bisoft.navi.common.resources.MapResource;
 import com.bisoft.navi.common.resources.XMLResource;
@@ -34,10 +33,10 @@ public class App
             Map<String, String> cql = new XMLResource(com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")).loadedResource();
             
             Map<String, INeoQuery> map = Map.of(
-              "obj_", new NeoQuery<StructureNode>(fun, cql),
-              "relation_", new NeoQueryShip(cql),
-              "fact_", new NeoQueryFact(cql),
-              "dic_", new NeoQueryDic(cql)
+              "obj_", new NeoQuery(new StructureNode(), cql),
+              "relation_", new NeoQuery(new StructureShip(), cql),
+              "fact_", new NeoQuery(new StructureFact(), cql),
+              "dic_", new NeoQuery(new StructureDic(), cql)
             );
     
             new ObjectStructure(
@@ -45,7 +44,8 @@ public class App
               new DBTarget(
                 dbConnection
                 , cql
-              ).clearedTarget()
+              ).clearedTarget(),
+              map
             ).save();
         } catch (LoadConnectionParameterException | DBConnectionException e) {
             e.printStackTrace();
@@ -307,7 +307,6 @@ public class App
             }
         }
     }
-
     
     private static void loadRelationData(Driver driver, String[] entities) {
         try ( org.neo4j.driver.Session session = driver.session() )

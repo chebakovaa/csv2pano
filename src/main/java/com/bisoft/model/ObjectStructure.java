@@ -16,16 +16,17 @@ import static com.bisoft.navi.common.interfaces.IObjectStructure.ElementType.*;
 public class ObjectStructure implements IObjectStructure {
 	private final IStructureSource source;
 	private final IClearedTarget target;
-
-
-	public ObjectStructure(IStructureSource source, IClearedTarget target) {
+	private final Map<String, INeoQuery> map;
+	
+	
+	public ObjectStructure(IStructureSource source, IClearedTarget target, Map<String, INeoQuery> map) {
 		this.source = source;
 		this.target = target;
+		this.map = map;
 	}
 	
 	@Override
 	public void save() {
-
 		map.forEach((key,  value) -> {
 			try {
 							for (Iterator<IModelObject> it = source.objectCollection(key); it.hasNext(); ) {
