@@ -5,15 +5,14 @@ import com.bisoft.interfaces.IOpenedConnection;
 import com.bisoft.model.*;
 import com.bisoft.navi.common.exceptions.DBConnectionException;
 import com.bisoft.navi.common.exceptions.LoadConnectionParameterException;
+import com.bisoft.navi.common.exceptions.LoadResourceException;
 import com.bisoft.navi.common.model.CSVFormat;
 import com.bisoft.navi.common.resources.MapResource;
 import com.bisoft.navi.common.resources.XMLResource;
 import org.neo4j.driver.*;
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,11 +31,11 @@ public class App
             IOpenedConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource()).openedConnection();
             Map<String, String> cql = new XMLResource(com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")).loadedResource();
             
-            Map<String, INeoQuery> map = Map.of(
-              "obj_", new NeoQuery(new StructureNode(), cql),
-              "relation_", new NeoQuery(new StructureShip(), cql),
-              "fact_", new NeoQuery(new StructureFact(), cql),
-              "dic_", new NeoQuery(new StructureDic(), cql)
+            List<SourceType> map = List.of(
+              new SourceType("obj_", new NeoQuery(new StructureNode(), cql)),
+              new SourceType("relation_", new NeoQuery(new StructureShip(), cql)),
+              new SourceType("fact_", new NeoQuery(new StructureFact(), cql)),
+              new SourceType("dic_", new NeoQuery(new StructureDic(), cql))
             );
     
             new ObjectStructure(
@@ -47,7 +46,7 @@ public class App
               ).clearedTarget(),
               map
             ).save();
-        } catch (LoadConnectionParameterException | DBConnectionException e) {
+        } catch (LoadConnectionParameterException | DBConnectionException | LoadResourceException e) {
             e.printStackTrace();
         }
     }

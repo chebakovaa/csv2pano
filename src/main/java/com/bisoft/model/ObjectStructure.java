@@ -8,6 +8,7 @@ import com.bisoft.navi.common.interfaces.IModelObject;
 import com.bisoft.navi.common.interfaces.IStructureSource;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static com.bisoft.navi.common.interfaces.IObjectStructure.ElementType.*;
@@ -16,10 +17,10 @@ import static com.bisoft.navi.common.interfaces.IObjectStructure.ElementType.*;
 public class ObjectStructure implements IObjectStructure {
 	private final IStructureSource source;
 	private final IClearedTarget target;
-	private final Map<String, INeoQuery> map;
+	private final List<SourceType> map;
 	
 	
-	public ObjectStructure(IStructureSource source, IClearedTarget target, Map<String, INeoQuery> map) {
+	public ObjectStructure(IStructureSource source, IClearedTarget target, List<SourceType> map) {
 		this.source = source;
 		this.target = target;
 		this.map = map;
@@ -27,10 +28,10 @@ public class ObjectStructure implements IObjectStructure {
 	
 	@Override
 	public void save() {
-		map.forEach((key,  value) -> {
+		map.forEach((rec) -> {
 			try {
-							for (Iterator<IModelObject> it = source.objectCollection(key); it.hasNext(); ) {
-								target.save(it.next(), value);
+							for (Iterator<IModelObject> it = source.objectCollection(rec.prefix()); it.hasNext(); ) {
+								target.save(it.next(), rec.query());
 							}
 			} catch (LoadStructureSourceException e) {
 				e.printStackTrace();

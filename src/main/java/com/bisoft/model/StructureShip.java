@@ -10,7 +10,7 @@ import java.util.Map;
 public class StructureShip implements ILoadedQuery {
 	@Override
 	public void run(Session session, IModelObject obj, Map<String, String> cql) {
-		session.run(String.format(cql.get("import_node"), obj.name()));
+		//session.run(String.format(cql.get("import-node"), obj.name()));
 		
 	}
 }

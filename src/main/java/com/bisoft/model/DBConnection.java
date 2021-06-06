@@ -19,7 +19,7 @@ public class DBConnection implements IDBConnection {
     
     @Override
     public IOpenedConnection openedConnection() throws DBConnectionException {
-        Driver driver = GraphDatabase.driver( resource.get("neo.url"), AuthTokens.basic( resource.get("neo.username"), resource.get("noe.password") ) );
+        Driver driver = GraphDatabase.driver( resource.get("neo.url"), AuthTokens.basic( resource.get("neo.username"), resource.get("neo.password") ) );
         if (driver == null) {
             throw new DBConnectionException(
               String.format("DB connection fail with url: <%s>, username: <%s>", resource.get("neo.url"), resource.get("neo.username"))

@@ -7,7 +7,7 @@
         MATCH(n) DELETE n;
     </query>
     <query id="import-node">
-        CALL apoc.import.csv([{fileName: 'file:///pitc/obj_%s', labels:[]}], [], {delimiter: ';', arrayDelimiter: '|', stringIds: true});
+        CALL apoc.import.csv([{fileName: 'file:///pitc/%s', labels:[]}], [], {delimiter: ';', arrayDelimiter: '|', stringIds: true});
     </query>
     <query id="apoc-iterate">
         CALL apoc.periodic.iterate('%s','%s',{batchSize:10000, iterateList:true});
