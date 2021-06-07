@@ -27,27 +27,30 @@ public class App
             Map<String, String> sourceResource = new MapResource("source.properties").loadedResource();
             File folder = args.length > 0 && args[0] != null && args[0].length() > 0 ? new File(args[0])
                     : new File(Paths.get(System.getProperty("user.home"), sourceResource.get("location")).toUri());
-
-            IOpenedConnection dbConnection = new DBConnection(new MapResource("db.properties").loadedResource()).openedConnection();
-            Map<String, String> cql = new XMLResource(com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")).loadedResource();
-            
-            List<SourceType> map = List.of(
-              new SourceType("obj_", new NeoQuery(new StructureNode(), cql)),
-              new SourceType("relation_", new NeoQuery(new StructureShip(), cql)),
-              new SourceType("fact_", new NeoQuery(new StructureFact(), cql)),
-              new SourceType("dic_", new NeoQuery(new StructureDic(), cql))
-            );
+            DBConnection db = new DBConnection(new MapResource("db.properties").loadedResource());
+            try(IOpenedConnection dbConnection = db.openedConnection()) {
+                Map<String, String> cql = new XMLResource(com.bisoft.navi.App.class.getClassLoader().getResourceAsStream("cql_collection.xml")).loadedResource();
     
-            new ObjectStructure(
-              new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"))),
-              new DBTarget(
-                dbConnection
-                , cql
-              ).clearedTarget(),
-              map
-            ).save();
-        } catch (LoadConnectionParameterException | DBConnectionException | LoadResourceException e) {
-            e.printStackTrace();
+                List<SourceType> map = List.of(
+                  new SourceType("obj_", new NeoQuery(new StructureNode(), cql)),
+                  new SourceType("relation_", new NeoQuery(new StructureShip(), cql)),
+                  new SourceType("fact_", new NeoQuery(new StructureFact(), cql)),
+                  new SourceType("dic_", new NeoQuery(new StructureDic(), cql))
+                );
+    
+                new ObjectStructure(
+                  new FileSource(folder, new CSVFormat(sourceResource.get("column.delimiter"))),
+                  new DBTarget(
+                    dbConnection
+                    , cql
+                  ).clearedTarget(),
+                  map
+                ).save();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (LoadConnectionParameterException ex) {
+            ex.printStackTrace();
         }
     }
     

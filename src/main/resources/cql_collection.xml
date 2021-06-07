@@ -7,16 +7,15 @@
         MATCH(n) DELETE n;
     </query>
     <query id="import-node">
-        CALL apoc.import.csv([{fileName: 'file:///pitc/%s', labels:[]}], [], {delimiter: ';', arrayDelimiter: '|', stringIds: true});
+        CALL apoc.import.csv([{fileName: 'file:///pitc/%s', labels:[]}], [], {delimiter: ';', arrayDelimiter: '|', stringIds: false});
     </query>
     <query id="apoc-iterate">
         CALL apoc.periodic.iterate('%s','%s',{batchSize:10000, iterateList:true});
     </query>
     <query id="relation-create">
-        MATCH (e:row.from_name {uid: row.from_id}), (o:row.to_name {uid: row.to_id})
-        CREATE (e)-[r:CONTAINED_INTO {uid: '%1$s-' + o.uid, oname: '%1$s', otype: 'folder'}]->(o)
+        MATCH (e:%1$s {uid:toInteger(row.from_id)}), (o:%2$s {uid:toInteger(row.to_id)}) CREATE (e)-[r:CONTAINED_INTO {uid:o.uid, oname: row.from_name, otype: "folder"}]->(o)
     </query>
     <query id="relation-load">
-        CALL apoc.load.csv('file:///pitc/relation_%s', {sep:";", arraySep:",", header:true}) YIELD map as row return row
+        CALL apoc.load.csv("file:///pitc/%s", {sep:";", arraySep:",", header:true}) YIELD map as row return row
     </query>
 </query-collection>
